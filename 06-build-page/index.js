@@ -7,18 +7,16 @@ const enc = 'utf-8';
 const templatePath = path.join(__dirname, 'template.html')
 const componentsPath = path.join(__dirname, 'components');
 
+
+
 //folder
 async function createFolder (path) {
 await fsPromises.mkdir(path, {recursive: true}, (err)=> {if (err) throw err;})
 }
 createFolder(path.join(__dirname, 'project-dist'))
 
-
 // read to Index
-async function createFile(path, str) {
-  await fsPromises.writeFile(path, str, (err)=> {if (err) throw err;})
-}
-createFile(path.join(__dirname, 'project-dist', 'index.html'), '')  
+fsPromises.writeFile(path.join(__dirname, 'project-dist', 'index.html'), '', (err)=> {if (err) throw err;})  
 
 
 let templateString = '';
@@ -57,11 +55,10 @@ fs.readdir(path.join(__dirname, 'styles'), (err, files) => {
 })
 
 
-
-
 // copy assets
 
 async function copyFiles (currFolder, newFolder) {
+  try {
   await fsPromises.mkdir(newFolder, {recursive: true})
   
   const files = await fsPromises.readdir(currFolder, { withFileTypes: true }, ()=>{})
@@ -72,7 +69,10 @@ async function copyFiles (currFolder, newFolder) {
         copyFiles(path.join(currFolder, `${file.name}`), path.join(newFolder, `${file.name}`))
       }
     })
-  
+  }
+  catch {
+    console.log('Cannot copy folder');
+  }
   }
 
   copyFiles (path.join(__dirname, 'assets'), path.join(__dirname, 'project-dist', 'assets'))
