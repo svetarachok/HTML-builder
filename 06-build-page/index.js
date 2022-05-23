@@ -2,60 +2,79 @@ const path = require('path');
 const fs = require('fs');
 const fsPromises = fs.promises;
 
+const enc = 'utf-8';
+//Paths
+const templatePath = path.join(__dirname, 'template.html')
+const componentsPath = path.join(__dirname, 'components');
 
-const readTemplate = fs.createReadStream(path.join(__dirname, 'template.html'), 'utf-8');
-
-
-readTemplate.on('data', (data) => {
-  
-  let templateString = '';
-  templateString += data.toString() 
-  console.log(templateString)
-  
-  // let filesArr = [];
-  fs.readdir(path.join(__dirname, 'components'), 'utf-8', (err, arr)=>{
-
-    console.log(arr)
+//folder
+async function createFolder (path) {
+await fsPromises.mkdir(path, {recursive: true}, (err)=> {if (err) throw err;})
+}
+createFolder(path.join(__dirname, 'project-dist'))
 
 
-    let info = '';
-    fs.readFile(path.join(__dirname, 'components', `${arr[0]}`), 'utf-8', (err, data)=>{
-      info += data;
-      return info
+// read to Index
+async function createFile(path, str) {
+  await fsPromises.writeFile(path, str, (err)=> {if (err) throw err;})
+}
+createFile(path.join(__dirname, 'project-dist', 'index.html'), '')  
+
+
+let templateString = '';
+
+fs.readFile(templatePath, enc, (err, string) =>{  
+  templateString += string
+
+  const tags = templateString.match(/{{\w*}}/g); //[ '{{header}}', '{{articles}}', '{{footer}}' ]
+ 
+  tags.forEach(tag => {
+    let name = tag.slice(2, -2)
+    let regex = `{{${name}}}`;
+
+    fs.readFile(path.join(__dirname, 'components', `${name}.html`), enc, (err, data)=>{ 
+      templateString = templateString.replace(regex, `${data}`)
+      
+      fs.writeFile(path.join(__dirname, 'project-dist', 'index.html'), `${templateString}`, ()=> {}) 
     })
-
-    console.log(info)
-    
-
   })
-  
+})
+
+// read CSS
+
+fs.writeFile(path.join(__dirname, 'project-dist', 'style.css'), '', ()=> {})  
+const writable = fs.createWriteStream(path.join(__dirname, 'project-dist', 'style.css'), 'utf-8')
+
+fs.readdir(path.join(__dirname, 'styles'), (err, files) => {
+  if (err) throw err;
+
+  let cssFiles = files.filter(file => path.extname(`${file}`) === '.css');
+
+  for (let i=0; i<cssFiles.length; i++) {
+    let readable = fs.createReadStream(path.join(__dirname, 'styles', `${files[i]}`), 'utf-8')
+    readable.pipe(writable)
+  }
 })
 
 
 
 
+// copy assets
+
+async function copyFiles (currFolder, newFolder) {
+  await fsPromises.mkdir(newFolder, {recursive: true})
   
-// fs.readdir(path.join(__dirname, 'components'), 'utf-8', ((err, arr)=>{
+  const files = await fsPromises.readdir(currFolder, { withFileTypes: true }, ()=>{})
+    files.forEach(file => {
+      if (file.isFile()) {
+        fsPromises.copyFile(path.join(currFolder, `${file.name}`), path.join(newFolder, `${file.name}`))
+      } else {
+        copyFiles(path.join(currFolder, `${file.name}`), path.join(newFolder, `${file.name}`))
+      }
+    })
+  
+  }
 
-    // fs.readFile(path.join(__dirname, 'template.html'), 'utf-8', ((err, string) =>{
-  //   if (err) throw err; 
-    
-  //   templateString += string;
-    
-  //   for (let i=0; i<arr.length; i++) {
-  //    let info = fs.readFile(path.join(__dirname, 'components', `${arr[i]}`), 'utf-8', (err, data)=>{
-  //       if (err) throw err; 
-
-  //       // console.log(string.replace(`{{${path.parse(arr[i]).name}}}`, `${data}`))
-  //     return data
-  //     })
-  //     console.log(info)
-  //   }  
-    
-
-  // }))
-    
-  // }));
-
+  copyFiles (path.join(__dirname, 'assets'), path.join(__dirname, 'project-dist', 'assets'))
 
 
