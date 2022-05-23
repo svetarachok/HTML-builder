@@ -2,23 +2,23 @@ const path = require('path')
 const fs = require('fs');
 const fsPromises = fs.promises;
   
-fsPromises.mkdir(path.join(__dirname, 'files-copy'), {recursive: true})
-.then( () => {
-  fs.readdir(path.join(__dirname, 'files'), (err, files) => {
-    if (err) throw err;
-  
-    files.forEach(file => {
-      fs.readFile(path.join(__dirname, 'files', `${file}`), 'utf-8',   (err, data) => {
-        if (err) throw err;
-        fs.writeFile(path.join(__dirname, 'files-copy', `${file}`), `${data}`, ()=> {})  
-      })
-    })
-  
-  })
-    
-})
-.catch( () => {
-    console.log('Cannot create folder');
-});
 
+async function copyFiles (currFolder, newFolder) {
+  try {
+    await fsPromises.mkdir(newFolder, {recursive: true})
+  
+    const files = await fsPromises.readdir(currFolder, { withFileTypes: true }, ()=>{})
+      files.forEach(file => {
+        if (file.isFile()) {
+          fsPromises.copyFile(path.join(currFolder, `${file.name}`), path.join(newFolder, `${file.name}`))
+        } else {
+          copyFiles(path.join(currFolder, `${file.name}`), path.join(newFolder, `${file.name}`))
+        }
+      })
+      
+  } catch {
+    console.log('Cannot create folder');
+  }}
+
+  copyFiles (path.join(__dirname, 'files'), path.join(__dirname, 'files-copy'))
 
