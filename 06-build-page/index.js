@@ -38,7 +38,6 @@ fs.readdir(componentsPath, enc, ((err, arr)=>{
   }))
 }));
 
-
 // read CSS
 
 fs.writeFile(path.join(__dirname, 'project-dist', 'style.css'), '', ()=> {})  

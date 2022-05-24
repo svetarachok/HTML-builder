@@ -9,8 +9,8 @@ fs.readdir(path.join(__dirname, 'secret-folder'), {withFileTypes: true}, (err, d
 
       fs.stat(path.join(__dirname, 'secret-folder', `${file.name}`), (err, data)=> {
         if (err) throw err ;
-
-        console.log(file.name + ' -- ' + path.parse(`${file.name}`).ext + ' -- ' + data.size+'bytes')
+        let fileName = path.parse(`${file.name}`)
+        console.log(fileName.name + ' -- ' + fileName.ext.slice(1) + ' -- ' + data.size/1000+'kb')
       })
     }
   })
