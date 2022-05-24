@@ -17,26 +17,27 @@ createFolder(path.join(__dirname, 'project-dist'))
 
 // read to Index
 fsPromises.writeFile(path.join(__dirname, 'project-dist', 'index.html'), '', (err)=> {if (err) throw err;})  
+  
+fs.readdir(componentsPath, enc, ((err, arr)=>{
+  let templateString = '';
+    fs.readFile(templatePath, enc, ((err, string) =>{
+        if (err) throw err; 
+    
+        templateString += string;
+    
+    for (let i=0; i < arr.length; i++) {
+    fs.readFile(path.join(__dirname, 'components', `${arr[i]}`), enc, (err, data)=>{
+        if (err) throw err; 
 
+        let regex = `{{${path.parse(arr[i]).name}}}`
+        templateString = templateString.replace(regex, `${data}`)
+        fs.writeFile(path.join(__dirname, 'project-dist', 'index.html'), `${templateString}`, ()=> {})
+      })
+    }  
+  
+  }))
+}));
 
-let templateString = '';
-
-fs.readFile(templatePath, enc, (err, string) =>{  
-  templateString += string
-
-  const tags = templateString.match(/{{\w*}}/g); //[ '{{header}}', '{{articles}}', '{{footer}}' ]
- 
-  tags.forEach(tag => {
-    let name = tag.slice(2, -2)
-    let regex = `{{${name}}}`;
-
-    fs.readFile(path.join(__dirname, 'components', `${name}.html`), enc, (err, data)=>{ 
-      templateString = templateString.replace(regex, `${data}`)
-      
-      fs.writeFile(path.join(__dirname, 'project-dist', 'index.html'), `${templateString}`, ()=> {}) 
-    })
-  })
-})
 
 // read CSS
 

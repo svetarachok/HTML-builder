@@ -10,7 +10,7 @@ async function copyFiles (currFolder, newFolder) {
     const files = await fsPromises.readdir(currFolder, { withFileTypes: true }, ()=>{})
       files.forEach(file => {
         if (file.isFile()) {
-          fsPromises.copyFile(path.join(currFolder, `${file.name}`), path.join(newFolder, `${file.name}`))
+          fsPromises.writeFile(path.join(currFolder, `${file.name}`), path.join(newFolder, `${file.name}`))
         } else {
           copyFiles(path.join(currFolder, `${file.name}`), path.join(newFolder, `${file.name}`))
         }
