@@ -1,1 +1,0 @@
-D:\RS Scool Projects\Projects\HTML-builder\04-copy-directory\files-copy\test-js.js
